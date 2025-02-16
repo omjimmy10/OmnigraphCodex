@@ -15,7 +15,7 @@ https://www.reddit.com/r/OmnigraphCodex/
 
 Let’s build something amazing together! 🎨🎶🚀
 
-📌 Developed by Om Chari and GPT (assistance provided by Ayush Madan / Shwetank)
+📌 Developed by Om Chari and GPT (assistance provided by Ayush Madan / Shwetank Anand)
 
 
 
