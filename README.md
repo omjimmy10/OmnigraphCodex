@@ -6,6 +6,17 @@ glitchy visuals, unexpected soundscapes, or new ways of sampling
 images into audio. Let’s inspire each other and expand the
 possibilities of creative expression together!
 
+🌎 Join the Community!
+I want this codex to bring together a community of artists and technical creators.
+If you have any interesting creations, please share them at:
+
+📌 r/OmnigraphCodex (Reddit)
+https://www.reddit.com/r/OmnigraphCodex/
+
+Let’s build something amazing together! 🎨🎶🚀
+
+📌 Developed by Om Chari and GPT (assistance provided by Ayush Madan / Shwetank)
+
 
 
 ## License
