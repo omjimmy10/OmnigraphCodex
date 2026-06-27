@@ -1,4 +1,4 @@
-package com.omnigraph.mobile.ui
+﻿package com.omnigraph.mobile.ui
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
@@ -212,14 +212,12 @@ private fun AppDrawer(
             selected = false,
             icon = { Icon(Icons.Filled.Folder, contentDescription = null) },
             onClick = onOpenImage,
-            enabled = state.lastImageUri != null,
         )
         NavigationDrawerItem(
             label = { Text("Open last WAV") },
             selected = false,
             icon = { Icon(Icons.Filled.Folder, contentDescription = null) },
             onClick = onOpenAudio,
-            enabled = state.lastAudioUri != null,
         )
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(text = "Output folders", style = MaterialTheme.typography.titleSmall)
@@ -364,3 +362,5 @@ private fun ImagePreview(bitmap: Bitmap?) {
         }
     }
 }
+
+
