@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.OmniGraphMobile" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">#F8FAF9</item>
+        <item name="android:statusBarColor">#F8FAF9</item>
+    </style>
+</resources>
