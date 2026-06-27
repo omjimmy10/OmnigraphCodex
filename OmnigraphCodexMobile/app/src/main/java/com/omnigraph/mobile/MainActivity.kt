@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
                 state = uiState,
                 onModeChange = { mode -> uiState = uiState.copy(mode = mode) },
                 onPickAudio = { pickAudio.launch(arrayOf("audio/*", "application/octet-stream")) },
-                onPickImage = { pickImage.launch(arrayOf("image/png", "image/*")) },
+                onPickImage = { pickImage.launch(arrayOf("image/png")) },
                 onSaveImage = ::saveEncodedImage,
                 onSaveAudio = ::saveDecodedAudio,
                 onDecodeGeneratedImage = ::decodeGeneratedImage,
@@ -107,6 +107,10 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             runCatching {
                 val name = displayName(uri)
+                val mimeType = contentResolver.getType(uri)
+                require(mimeType == "image/png" || name.endsWith(".png", ignoreCase = true)) {
+                    "Method A images must be PNG. JPEG, screenshots, and WhatsApp images are lossy and will corrupt the decoded audio."
+                }
                 uiState = uiState.copy(
                     mode = WorkMode.Decode,
                     busy = true,
