@@ -1,4 +1,4 @@
-﻿package com.omnigraph.mobile.ui
+package com.omnigraph.mobile.ui
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
@@ -42,8 +42,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -89,11 +87,6 @@ fun OmniGraphApp(
             drawerContent = {
                 AppDrawer(
                     versionName = versionName,
-                    state = state,
-                    onModeChange = {
-                        onModeChange(it)
-                        scope.launch { drawerState.close() }
-                    },
                     onOpenImage = onOpenImage,
                     onOpenAudio = onOpenAudio,
                 )
@@ -121,47 +114,16 @@ fun OmniGraphApp(
                 },
                 snackbarHost = { SnackbarHost(snackbarHostState) },
             ) { padding ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    TabRow(selectedTabIndex = state.mode.ordinal) {
-                        Tab(
-                            selected = state.mode == WorkMode.Encode,
-                            onClick = { onModeChange(WorkMode.Encode) },
-                            text = { Text("Encode") },
-                            icon = { Icon(Icons.Filled.Audiotrack, contentDescription = null) },
-                        )
-                        Tab(
-                            selected = state.mode == WorkMode.Decode,
-                            onClick = { onModeChange(WorkMode.Decode) },
-                            text = { Text("Decode") },
-                            icon = { Icon(Icons.Filled.Image, contentDescription = null) },
-                        )
-                    }
-
-                    StatusLine(state = state)
-
-                    when (state.mode) {
-                        WorkMode.Encode -> EncodeContent(
-                            state = state,
-                            onPickAudio = onPickAudio,
-                            onSaveImage = onSaveImage,
-                            onDecodeGeneratedImage = onDecodeGeneratedImage,
-                            onReset = onReset,
-                        )
-                        WorkMode.Decode -> DecodeContent(
-                            state = state,
-                            onPickImage = onPickImage,
-                            onSaveAudio = onSaveAudio,
-                            onReset = onReset,
-                        )
-                    }
-                }
+                OmniGraphOnePage(
+                    state = state,
+                    onPickAudio = onPickAudio,
+                    onPickImage = onPickImage,
+                    onSaveImage = onSaveImage,
+                    onSaveAudio = onSaveAudio,
+                    onDecodeGeneratedImage = onDecodeGeneratedImage,
+                    onReset = onReset,
+                    modifier = Modifier.padding(padding),
+                )
             }
         }
 
@@ -178,10 +140,81 @@ fun OmniGraphApp(
 }
 
 @Composable
+private fun OmniGraphOnePage(
+    state: OmniGraphUiState,
+    onPickAudio: () -> Unit,
+    onPickImage: () -> Unit,
+    onSaveImage: () -> Unit,
+    onSaveAudio: () -> Unit,
+    onDecodeGeneratedImage: () -> Unit,
+    onReset: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val previewBitmap = state.encodedBitmap ?: state.decodedBitmap
+    val playbackFile = state.decodedPlaybackFile ?: state.sourcePlaybackFile
+    val playbackTitle = if (state.decodedPlaybackFile != null) "Decoded Audio" else "Normalized Audio"
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        StatusLine(state = state)
+
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(enabled = !state.busy, onClick = onPickAudio) {
+                    Icon(Icons.Filled.Audiotrack, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Pick Audio")
+                }
+                Button(enabled = !state.busy, onClick = onPickImage) {
+                    Icon(Icons.Filled.Image, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Pick PNG")
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(enabled = state.canSaveImage && !state.busy, onClick = onSaveImage) {
+                    Icon(Icons.Filled.Save, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Save PNG")
+                }
+                OutlinedButton(enabled = state.canSaveAudio && !state.busy, onClick = onSaveAudio) {
+                    Icon(Icons.Filled.Save, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Save WAV")
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(enabled = state.encodedBitmap != null && !state.busy, onClick = onDecodeGeneratedImage) {
+                    Icon(Icons.Filled.Image, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Test Decode")
+                }
+                OutlinedButton(enabled = !state.busy, onClick = onReset) {
+                    Icon(Icons.Filled.Refresh, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Reset")
+                }
+            }
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            FileNameLine("Audio", state.selectedAudioName)
+            FileNameLine("Image", state.selectedImageName)
+        }
+
+        ImagePreview(bitmap = previewBitmap)
+        PlaybackPanel(title = playbackTitle, file = playbackFile)
+    }
+}
+
+@Composable
 private fun AppDrawer(
     versionName: String,
-    state: OmniGraphUiState,
-    onModeChange: (WorkMode) -> Unit,
     onOpenImage: () -> Unit,
     onOpenAudio: () -> Unit,
 ) {
@@ -195,19 +228,6 @@ private fun AppDrawer(
             Text(text = versionName, style = MaterialTheme.typography.labelMedium)
         }
         NavigationDrawerItem(
-            label = { Text("Encode") },
-            selected = state.mode == WorkMode.Encode,
-            icon = { Icon(Icons.Filled.Audiotrack, contentDescription = null) },
-            onClick = { onModeChange(WorkMode.Encode) },
-        )
-        NavigationDrawerItem(
-            label = { Text("Decode") },
-            selected = state.mode == WorkMode.Decode,
-            icon = { Icon(Icons.Filled.Image, contentDescription = null) },
-            onClick = { onModeChange(WorkMode.Decode) },
-        )
-        Divider(modifier = Modifier.padding(vertical = 8.dp))
-        NavigationDrawerItem(
             label = { Text("Open last PNG") },
             selected = false,
             icon = { Icon(Icons.Filled.Folder, contentDescription = null) },
@@ -219,6 +239,7 @@ private fun AppDrawer(
             icon = { Icon(Icons.Filled.Folder, contentDescription = null) },
             onClick = onOpenAudio,
         )
+        Divider(modifier = Modifier.padding(vertical = 8.dp))
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(text = "Output folders", style = MaterialTheme.typography.titleSmall)
             Text(text = "Pictures/OmniGraphMobile", style = MaterialTheme.typography.bodySmall)
@@ -239,88 +260,15 @@ private fun StatusLine(state: OmniGraphUiState) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            if (state.busy) CircularProgressIndicator(modifier = Modifier.width(18.dp).height(18.dp), strokeWidth = 2.dp)
+            if (state.busy) {
+                CircularProgressIndicator(modifier = Modifier.width(18.dp).height(18.dp), strokeWidth = 2.dp)
+            }
             Text(
                 text = state.status,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-        }
-    }
-}
-
-@Composable
-private fun EncodeContent(
-    state: OmniGraphUiState,
-    onPickAudio: () -> Unit,
-    onSaveImage: () -> Unit,
-    onDecodeGeneratedImage: () -> Unit,
-    onReset: () -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(enabled = !state.busy, onClick = onPickAudio) {
-                Icon(Icons.Filled.Audiotrack, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Pick Audio")
-            }
-            OutlinedButton(enabled = !state.busy, onClick = onReset) {
-                Icon(Icons.Filled.Refresh, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Reset")
-            }
-        }
-
-        FileNameLine("Audio", state.selectedAudioName)
-        ImagePreview(bitmap = state.encodedBitmap)
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(enabled = state.canSaveImage && !state.busy, onClick = onSaveImage) {
-                Icon(Icons.Filled.Save, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Save PNG")
-            }
-            OutlinedButton(enabled = state.encodedBitmap != null && !state.busy, onClick = onDecodeGeneratedImage) {
-                Icon(Icons.Filled.Image, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Test Decode")
-            }
-        }
-
-        PlaybackPanel(title = "Normalized Audio", file = state.sourcePlaybackFile)
-    }
-}
-
-@Composable
-private fun DecodeContent(
-    state: OmniGraphUiState,
-    onPickImage: () -> Unit,
-    onSaveAudio: () -> Unit,
-    onReset: () -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(enabled = !state.busy, onClick = onPickImage) {
-                Icon(Icons.Filled.Image, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Pick PNG")
-            }
-            OutlinedButton(enabled = !state.busy, onClick = onReset) {
-                Icon(Icons.Filled.Refresh, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Reset")
-            }
-        }
-
-        FileNameLine("Image", state.selectedImageName)
-        ImagePreview(bitmap = state.decodedBitmap)
-        PlaybackPanel(title = "Decoded Audio", file = state.decodedPlaybackFile)
-
-        Button(enabled = state.canSaveAudio && !state.busy, onClick = onSaveAudio) {
-            Icon(Icons.Filled.Save, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
-            Text("Save WAV")
         }
     }
 }
@@ -362,5 +310,3 @@ private fun ImagePreview(bitmap: Bitmap?) {
         }
     }
 }
-
-
