@@ -1,0 +1,9 @@
+﻿<resources>
+    <style name="Theme.OmniGraphMobile" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:navigationBarColor">#020509</item>
+        <item name="android:statusBarColor">#020509</item>
+        <item name="android:windowBackground">#020509</item>
+    </style>
+</resources>
