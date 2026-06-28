@@ -29,7 +29,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
@@ -111,8 +110,6 @@ fun OmniGraphApp(
             drawerContent = {
                 AppDrawer(
                     onClose = { scope.launch { drawerState.close() } },
-                    onOpenImage = onOpenImage,
-                    onOpenAudio = onOpenAudio,
                     onReadme = {
                         showReadme = true
                         scope.launch { drawerState.close() }
@@ -287,15 +284,15 @@ private fun MethodSelector() {
             .border(1.dp, OmniDivider, RoundedCornerShape(8.dp))
             .background(OmniPanel.copy(alpha = 0.84f), RoundedCornerShape(8.dp)),
     ) {
-        MethodButton(label = "METHOD A", selected = true, locked = false, onClick = {})
-        MethodButton(label = "METHOD B", selected = false, locked = true, onClick = ::handleLockedMethodTap)
-        MethodButton(label = "METHOD C", selected = false, locked = true, onClick = ::handleLockedMethodTap)
+        MethodButton(letter = "A", selected = true, locked = false, onClick = {})
+        MethodButton(letter = "B", selected = false, locked = true, onClick = ::handleLockedMethodTap)
+        MethodButton(letter = "C", selected = false, locked = true, onClick = ::handleLockedMethodTap)
     }
 }
 
 @Composable
 private fun RowScope.MethodButton(
-    label: String,
+    letter: String,
     selected: Boolean,
     locked: Boolean,
     onClick: () -> Unit,
@@ -330,13 +327,22 @@ private fun RowScope.MethodButton(
             )
             Spacer(Modifier.width(6.dp))
         }
-        Text(
-            text = label,
-            color = foreground,
-            fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.labelLarge,
-            textAlign = TextAlign.Center,
-        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "METHOD",
+                color = foreground,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.labelLarge,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = letter,
+                color = foreground,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }
 
@@ -434,8 +440,6 @@ private fun OperationMessage(state: OmniGraphUiState) {
 @Composable
 private fun AppDrawer(
     onClose: () -> Unit,
-    onOpenImage: () -> Unit,
-    onOpenAudio: () -> Unit,
     onReadme: () -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
@@ -481,25 +485,21 @@ private fun AppDrawer(
                 color = OmniGreen.copy(alpha = 0.72f),
             )
             Spacer(Modifier.height(24.dp))
-            DrawerButton(label = "README", icon = Icons.Filled.Info, tint = OmniGreen, onClick = onReadme)
+            DrawerButton(label = "README", icon = Icons.Filled.Info, tint = OmniMuted, onClick = onReadme)
             Spacer(Modifier.height(24.dp))
             DrawerSection(title = "ENCODED IMAGES", icon = Icons.Filled.Image, tint = OmniGreen)
             Text("Pictures/OmnigraphCodexMobile", color = OmniMuted, style = MaterialTheme.typography.bodySmall)
-            Spacer(Modifier.height(8.dp))
-            DrawerButton(label = "Open last image", icon = Icons.Filled.Folder, tint = OmniGreen, onClick = onOpenImage)
             Spacer(Modifier.height(20.dp))
             Divider(color = OmniDivider)
             Spacer(Modifier.height(20.dp))
             DrawerSection(title = "DECODED AUDIO", icon = Icons.Filled.Audiotrack, tint = OmniBlue)
             Text("Music/OmnigraphCodexMobile", color = OmniMuted, style = MaterialTheme.typography.bodySmall)
-            Spacer(Modifier.height(8.dp))
-            DrawerButton(label = "Open last audio", icon = Icons.Filled.Folder, tint = OmniBlue, onClick = onOpenAudio)
             Spacer(Modifier.weight(1f))
             Divider(color = OmniDivider)
             Spacer(Modifier.height(14.dp))
             Text(
                 text = "OmnigraphCodex for PC",
-                color = OmniBlue,
+                color = OmniMuted,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clickable { uriHandler.openUri(PC_REPO_URL) },
